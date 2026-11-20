@@ -1,0 +1,139 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Private CampusCart student profile and default hostel delivery preferences.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "defaultHostelBlock": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "defaultRoomNumber": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "timestamp"
+        }
+      },
+      "required": ["uid", "displayName", "email", "updatedAt"]
+    },
+    "HostelOrder": {
+      "title": "HostelOrder",
+      "description": "Student hostel essentials order placed on CampusCart.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "orderCode": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 24
+        },
+        "customerName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "phone": {
+          "type": "string",
+          "minLength": 7,
+          "maxLength": 20
+        },
+        "hostelBlock": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "roomNumber": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "slot": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 60
+        },
+        "paymentMethod": {
+          "type": "string",
+          "enum": ["UPI", "Cash on Delivery"]
+        },
+        "itemLines": {
+          "type": "array",
+          "description": "Bounded list of formatted order item lines (max 25)."
+        },
+        "subtotal": {
+          "type": "number"
+        },
+        "discount": {
+          "type": "number"
+        },
+        "deliveryFee": {
+          "type": "number"
+        },
+        "total": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Confirmed", "Out for Hostel Drop", "Delivered", "Cancelled"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "timestamp"
+        }
+      },
+      "required": [
+        "userId",
+        "orderCode",
+        "customerName",
+        "phone",
+        "hostelBlock",
+        "roomNumber",
+        "slot",
+        "paymentMethod",
+        "itemLines",
+        "subtotal",
+        "discount",
+        "deliveryFee",
+        "total",
+        "status",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/private/profile": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private student PII and hostel delivery defaults."
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/HostelOrder" },
+      "description": "Student hostel orders belonging to the authenticated user."
+    }
+  }
+}
