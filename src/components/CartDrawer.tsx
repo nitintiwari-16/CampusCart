@@ -37,6 +37,7 @@ interface CartDrawerProps {
   user: User | null;
   profile: StudentProfile | null;
   authLoading: boolean;
+  authError?: string;
   onGoogleSignIn: () => void;
 }
 
@@ -56,6 +57,7 @@ export function CartDrawer({
   user,
   profile,
   authLoading,
+  authError,
   onGoogleSignIn,
 }: CartDrawerProps) {
   const [activeTab, setActiveTab] = useState<'cart' | 'orders'>(initialTab);
@@ -205,6 +207,11 @@ export function CartDrawer({
                     loading={authLoading}
                     compact
                   />
+                  {authError && (
+                    <p className="rounded-lg bg-rose-50 px-3 py-2 text-[11px] font-medium text-[#9E1B32]">
+                      {authError}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -354,21 +361,28 @@ export function CartDrawer({
           ) : (
             <div className="space-y-5">
               {!user && (
-                <div className="flex items-center justify-between gap-3 rounded-xl border border-[#E6E1D8] bg-white px-4 py-3">
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-[#141414]">
-                      Save orders to your account
-                    </p>
-                    <p className="text-[11px] text-[#5A564E]">
-                      Auto-fill hostel details with Google
-                    </p>
+                <div className="rounded-xl border border-[#E6E1D8] bg-white px-4 py-3 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-[#141414]">
+                        Save orders to your account
+                      </p>
+                      <p className="text-[11px] text-[#5A564E]">
+                        Auto-fill hostel details with Google
+                      </p>
+                    </div>
+                    <GoogleAuthButton
+                      onClick={onGoogleSignIn}
+                      loading={authLoading}
+                      label="Sign in"
+                      compact
+                    />
                   </div>
-                  <GoogleAuthButton
-                    onClick={onGoogleSignIn}
-                    loading={authLoading}
-                    label="Sign in"
-                    compact
-                  />
+                  {authError && (
+                    <p className="rounded-lg bg-rose-50 px-3 py-2 text-[11px] font-medium text-[#9E1B32]">
+                      {authError}
+                    </p>
+                  )}
                 </div>
               )}
 

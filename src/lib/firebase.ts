@@ -1,4 +1,4 @@
-import {initializeApp} from 'firebase/app';
+import {FirebaseError, initializeApp} from 'firebase/app';
 import {
   GoogleAuthProvider,
   getAuth,
@@ -95,6 +95,67 @@ testConnection();
 export async function signInWithGoogle(): Promise<User> {
   const result = await signInWithPopup(auth, googleProvider);
   return result.user;
+}
+
+export function formatGoogleAuthError(err: unknown): {
+  code: string;
+  message: string;
+  suggestNewTab?: boolean;
+} {
+  const code = err instanceof FirebaseError ? err.code : '';
+  const host = typeof window !== 'undefined' ? window.location.hostname : 'this domain';
+
+  switch (code) {
+    case 'auth/unauthorized-domain':
+      return {
+        code,
+        message: `Google Sign-In is not authorized on "${host}". Add this domain in Firebase Console → Authentication → Settings → Authorized domains.`,
+      };
+    case 'auth/popup-blocked':
+      return {
+        code,
+        suggestNewTab: true,
+        message:
+          'Your browser blocked the Google Sign-In popup. Allow popups for this site or open this page directly in Chrome/Safari.',
+      };
+    case 'auth/popup-closed-by-user':
+      return {
+        code,
+        suggestNewTab: true,
+        message:
+          'Google Sign-In window was closed before completing login. On mobile or in-app browsers, open in Chrome/Safari and allow popups.',
+      };
+    case 'auth/operation-not-supported-in-this-environment':
+    case 'auth/web-storage-unsupported':
+      return {
+        code,
+        suggestNewTab: true,
+        message:
+          'This browser environment blocks sign-in storage or popups. Open the link directly in Chrome or Safari with cookies enabled.',
+      };
+    case 'auth/operation-not-allowed':
+      return {
+        code,
+        message:
+          'Google Sign-In provider is not enabled yet in Firebase Console → Authentication → Sign-in method.',
+      };
+    case 'auth/network-request-failed':
+      return {
+        code,
+        message: 'Network error while reaching Google Sign-In. Check your connection and try again.',
+      };
+    case 'auth/cancelled-popup-request':
+      return {
+        code,
+        message: '',
+      };
+    default:
+      return {
+        code: code || 'unknown',
+        suggestNewTab: true,
+        message: `Google Sign-In failed${code ? ` (${code})` : ''}. Try opening in Chrome or Safari and ensure this domain is authorized in Firebase.`,
+      };
+  }
 }
 
 export async function signOutUser(): Promise<void> {

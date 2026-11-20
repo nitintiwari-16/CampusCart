@@ -37,6 +37,7 @@ import {
   auth,
   cancelFirestoreOrder,
   createFirestoreOrder,
+  formatGoogleAuthError,
   loadStudentProfile,
   saveStudentProfile,
   signInWithGoogle,
@@ -94,6 +95,7 @@ export default function App() {
   const [authReady, setAuthReady] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [authSuggestNewTab, setAuthSuggestNewTab] = useState(false);
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [cloudOrders, setCloudOrders] = useState<HostelOrder[]>([]);
   const [guestOrders, setGuestOrders] = useState<HostelOrder[]>(() => {
@@ -236,13 +238,16 @@ export default function App() {
 
   const handleGoogleSignIn = async () => {
     setAuthError('');
+    setAuthSuggestNewTab(false);
     setAuthLoading(true);
     try {
       await signInWithGoogle();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unable to sign in with Google.';
-      if (!message.includes('popup-closed-by-user')) {
-        setAuthError('Google Sign-In was interrupted. Please allow popups and try again.');
+      const formatted = formatGoogleAuthError(err);
+      console.error('Google Sign-In error:', formatted.code, err);
+      if (formatted.message) {
+        setAuthError(formatted.message);
+        setAuthSuggestNewTab(Boolean(formatted.suggestNewTab));
       }
     } finally {
       setAuthLoading(false);
@@ -543,9 +548,32 @@ export default function App() {
 
           {authError && (
             <div className="mx-auto max-w-[1200px] px-4 pb-3 sm:px-6">
-              <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-[#9E1B32]">
-                {authError}
-              </p>
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-[#9E1B32]">
+                <span>{authError}</span>
+                <div className="flex items-center gap-3 shrink-0">
+                  {authSuggestNewTab && typeof window !== 'undefined' && (
+                    <a
+                      href={window.location.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline underline-offset-2 font-semibold hover:text-[#7F1528]"
+                    >
+                      Open in full browser tab
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthError('');
+                      setAuthSuggestNewTab(false);
+                    }}
+                    aria-label="Dismiss sign-in error"
+                    className="text-[#9E1B32]/80 hover:text-[#9E1B32]"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </section>
@@ -1042,6 +1070,7 @@ export default function App() {
         user={user}
         profile={profile}
         authLoading={authLoading}
+        authError={authError}
         onGoogleSignIn={handleGoogleSignIn}
       />
     </div>
